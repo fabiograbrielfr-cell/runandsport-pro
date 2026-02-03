@@ -1,0 +1,303 @@
+{
+  "shop": {
+    "name": "Run&Sport",
+    "country": "UY",
+    "defaultCurrency": "UYU",
+    "whatsapp": "59896786514",
+    "social": {
+      "instagram": "https://instagram.com/",
+      "facebook": "https://facebook.com/",
+      "tiktok": "https://tiktok.com/",
+      "youtube": "https://youtube.com/"
+    },
+    "shipping": {
+      "local": [
+        {
+          "id": "uy-mvd",
+          "label": "Montevideo (24–48h)",
+          "price": 190
+        },
+        {
+          "id": "uy-int",
+          "label": "Interior UY (48–72h)",
+          "price": 290
+        },
+        {
+          "id": "uy-pickup",
+          "label": "Retiro en tienda",
+          "price": 0
+        }
+      ],
+      "international": [
+        {
+          "id": "int-arg",
+          "label": "Argentina (5–10 días)",
+          "priceUSD": 18
+        },
+        {
+          "id": "int-bra",
+          "label": "Brasil (5–10 días)",
+          "priceUSD": 22
+        },
+        {
+          "id": "int-usa",
+          "label": "USA / Europa (8–15 días)",
+          "priceUSD": 35
+        }
+      ]
+    }
+  },
+  "products": [
+    {
+      "id": "dep1",
+      "category": "deportes",
+      "title": "Zapatillas Running Pro (Hombre)",
+      "desc": "Amortiguación suave, capellada respirable y suela antideslizante. Ideal 5K–21K.",
+      "tag": "Running",
+      "price": 3990,
+      "currency": "UYU",
+      "images": [
+        "images/deportes/dep1-1.svg",
+        "images/deportes/dep1-2.svg",
+        "images/deportes/dep1-3.svg"
+      ],
+      "specs": [
+        "Talles: 39–45",
+        "Peso: 280g",
+        "Drop: 10mm",
+        "Suela: anti-slip"
+      ],
+      "featured": true,
+      "stock": "in_stock"
+    },
+    {
+      "id": "dep2",
+      "category": "deportes",
+      "title": "Camiseta Técnica DryFit",
+      "desc": "Tela liviana, respirable y de secado rápido. Para entrenamiento intenso.",
+      "tag": "Training",
+      "price": 1290,
+      "currency": "UYU",
+      "images": [
+        "images/deportes/dep2-1.svg",
+        "images/deportes/dep2-2.svg"
+      ],
+      "specs": [
+        "Talles: S–XXL",
+        "Material: poliéster",
+        "Corte: regular fit"
+      ],
+      "featured": true,
+      "stock": "in_stock"
+    },
+    {
+      "id": "ten1",
+      "category": "tenis",
+      "title": "Raqueta Tenis Carbon Pro",
+      "desc": "Balanceada para control y potencia. Grip cómodo, ideal intermedio/avanzado.",
+      "tag": "Tenis",
+      "price": 5890,
+      "currency": "UYU",
+      "images": [
+        "images/tenis/ten1-1.svg",
+        "images/tenis/ten1-2.svg",
+        "images/tenis/ten1-3.svg"
+      ],
+      "specs": [
+        "Peso: 300g",
+        "Tamaño cabeza: 100 in²",
+        "Patrón: 16x19",
+        "Incluye: funda"
+      ],
+      "featured": true,
+      "stock": "in_stock"
+    },
+    {
+      "id": "ten2",
+      "category": "tenis",
+      "title": "Pelotas de Tenis Premium (Pack x3)",
+      "desc": "Bote consistente y gran durabilidad. Para entrenamiento y partido.",
+      "tag": "Accesorios",
+      "price": 590,
+      "currency": "UYU",
+      "images": [
+        "images/tenis/ten2-1.svg",
+        "images/tenis/ten2-2.svg"
+      ],
+      "specs": [
+        "Aprobación: ITF (training)",
+        "Pack: 3 unidades",
+        "Superficie: todas"
+      ],
+      "featured": false,
+      "stock": "in_stock"
+    },
+    {
+      "id": "pad1",
+      "category": "padel",
+      "title": "Paleta Pádel Control 3K",
+      "desc": "Carbono 3K, punto dulce amplio y gran manejo para jugadores de control.",
+      "tag": "Pádel",
+      "price": 6990,
+      "currency": "UYU",
+      "images": [
+        "images/padel/pad1-1.svg",
+        "images/padel/pad1-2.svg",
+        "images/padel/pad1-3.svg"
+      ],
+      "specs": [
+        "Forma: redonda",
+        "Núcleo: EVA soft",
+        "Peso: 360–375g",
+        "Incluye: protector"
+      ],
+      "featured": true,
+      "stock": "in_stock"
+    },
+    {
+      "id": "pad2",
+      "category": "padel",
+      "title": "Grip Overgrip Pro (Pack x3)",
+      "desc": "Mayor agarre y absorción. Ideal para partidos largos.",
+      "tag": "Accesorios",
+      "price": 490,
+      "currency": "UYU",
+      "images": [
+        "images/padel/pad2-1.svg",
+        "images/padel/pad2-2.svg"
+      ],
+      "specs": [
+        "Pack: 3 unidades",
+        "Tacto: dry",
+        "Color: negro"
+      ],
+      "featured": false,
+      "stock": "in_stock"
+    },
+    {
+      "id": "bt1",
+      "category": "beachtennis",
+      "title": "Raqueta Beach Tennis Kevlar",
+      "desc": "Potente y estable. Superficie con textura para más efecto.",
+      "tag": "Beach Tennis",
+      "price": 175,
+      "currency": "USD",
+      "images": [
+        "images/beachtennis/bt1-1.svg",
+        "images/beachtennis/bt1-2.svg",
+        "images/beachtennis/bt1-3.svg"
+      ],
+      "specs": [
+        "Peso: 330g",
+        "Balance: medio",
+        "Material: kevlar + carbono",
+        "Incluye: funda"
+      ],
+      "featured": true,
+      "stock": "in_stock"
+    },
+    {
+      "id": "bt2",
+      "category": "beachtennis",
+      "title": "Pelotas Beach Tennis (Pack x3)",
+      "desc": "Presión ideal para arena. Mayor control y durabilidad.",
+      "tag": "Beach Tennis",
+      "price": 22,
+      "currency": "USD",
+      "images": [
+        "images/beachtennis/bt2-1.svg",
+        "images/beachtennis/bt2-2.svg"
+      ],
+      "specs": [
+        "Pack: 3 unidades",
+        "Uso: arena",
+        "Nivel: recreativo/club"
+      ],
+      "featured": false,
+      "stock": "in_stock"
+    },
+    {
+      "id": "elec1",
+      "category": "electronica",
+      "title": "Reloj SmartFit Deportivo",
+      "desc": "Ritmo cardíaco, pasos, sueño y notificaciones. Resistente al agua.",
+      "tag": "Wearable",
+      "price": 2690,
+      "currency": "UYU",
+      "images": [
+        "images/electronica/elec1-1.svg",
+        "images/electronica/elec1-2.svg",
+        "images/electronica/elec1-3.svg"
+      ],
+      "specs": [
+        "Resistencia: 5ATM",
+        "Batería: hasta 7 días",
+        "Compatibilidad: iOS/Android"
+      ],
+      "featured": true,
+      "stock": "in_stock"
+    },
+    {
+      "id": "elec2",
+      "category": "electronica",
+      "title": "Auriculares Bluetooth Sport",
+      "desc": "Ajuste firme, batería larga duración, ideales para correr.",
+      "tag": "Audio",
+      "price": 1490,
+      "currency": "UYU",
+      "images": [
+        "images/electronica/elec2-1.svg",
+        "images/electronica/elec2-2.svg"
+      ],
+      "specs": [
+        "Batería: hasta 20h con estuche",
+        "Micrófono: sí",
+        "Resistencia: IPX4"
+      ],
+      "featured": false,
+      "stock": "in_stock"
+    },
+    {
+      "id": "mov1",
+      "category": "movilidad",
+      "title": "Scooter Eléctrico Urban 350W",
+      "desc": "Ideal ciudad: 350W, autonomía hasta 25 km, plegable.",
+      "tag": "Movilidad",
+      "price": 499,
+      "currency": "USD",
+      "images": [
+        "images/movilidad/mov1-1.svg",
+        "images/movilidad/mov1-2.svg",
+        "images/movilidad/mov1-3.svg"
+      ],
+      "specs": [
+        "Motor: 350W",
+        "Autonomía: hasta 25 km",
+        "Velocidad: 25 km/h",
+        "Peso: 12.5 kg"
+      ],
+      "featured": true,
+      "stock": "in_stock"
+    },
+    {
+      "id": "mov2",
+      "category": "movilidad",
+      "title": "Casco Urbano PRO",
+      "desc": "Cómodo y ventilado. Protección para bici/scooter con ajuste rápido.",
+      "tag": "Seguridad",
+      "price": 1990,
+      "currency": "UYU",
+      "images": [
+        "images/movilidad/mov2-1.svg",
+        "images/movilidad/mov2-2.svg"
+      ],
+      "specs": [
+        "Talles: M/L",
+        "Certificación: CE",
+        "Ajuste: dial 360°"
+      ],
+      "featured": false,
+      "stock": "in_stock"
+    }
+  ]
+}

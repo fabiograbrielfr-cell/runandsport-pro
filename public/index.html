@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Run&Sport — Tienda Online</title>
+  <meta name="description" content="Deportes, tenis, pádel, beach tennis, electrónica y movilidad eléctrica. Comprá por WhatsApp o Mercado Pago." />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="/">
+        <span class="logo">RS</span>
+        <span class="brand-text">
+          <span class="name">Run&Sport</span>
+          <span class="tagline">Tienda online • UY + compras del exterior</span>
+        </span>
+      </a>
+
+      <div class="actions">
+        <div class="currency">
+          <label for="currency">Moneda</label>
+          <select id="currency" aria-label="Moneda">
+            <option value="AUTO">Auto</option>
+            <option value="UYU">UYU</option>
+            <option value="USD">USD</option>
+            <option value="ARS">ARS</option>
+            <option value="BRL">BRL</option>
+            <option value="EUR">EUR</option>
+          </select>
+        </div>
+
+        <button id="btn-wsp" class="btn ghost" title="Comprar por WhatsApp">
+          WhatsApp
+        </button>
+
+        <button id="open-cart" class="btn primary" title="Abrir carrito">
+          Carrito <span id="cart-count" class="badge">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-card">
+        <h1>Todo para entrenar, competir y moverte.</h1>
+        <p>
+          Comprá en 2 clics: <strong>WhatsApp</strong> (cotización + envío) o
+          <strong>Mercado Pago</strong> (pago online). La moneda se adapta a tu país (o elegila).
+        </p>
+
+        <div class="hero-grid">
+          <div class="mini">
+            <div class="mini-title">✅ Pago seguro</div>
+            <div class="mini-text">Checkout Pro de Mercado Pago (UYU)</div>
+          </div>
+          <div class="mini">
+            <div class="mini-title">🌎 Exterior</div>
+            <div class="mini-text">Envíos internacionales (cotización)</div>
+          </div>
+          <div class="mini">
+            <div class="mini-title">⚡ Catálogo editable</div>
+            <div class="mini-text">Agregá productos en <code>server/catalog.json</code></div>
+          </div>
+        </div>
+
+        <div id="pay-notice" class="notice" hidden></div>
+      </div>
+    </section>
+
+    <section class="controls">
+      <div class="pills" role="tablist" aria-label="Categorías">
+        <button class="pill active" data-cat="all">Todo</button>
+        <button class="pill" data-cat="deportes">Deportes</button>
+        <button class="pill" data-cat="tenis">Tenis</button>
+        <button class="pill" data-cat="padel">Pádel</button>
+        <button class="pill" data-cat="beachtennis">Beach Tennis</button>
+        <button class="pill" data-cat="electronica">Electrónica</button>
+        <button class="pill" data-cat="movilidad">Movilidad eléctrica</button>
+      </div>
+
+      <div class="search-row">
+        <div class="search">
+          <input id="search" type="search" placeholder="Buscar productos, marcas, tags..." />
+          <button id="btn-clear" class="btn tiny">Limpiar</button>
+        </div>
+
+        <div class="sort">
+          <label for="sort">Orden</label>
+          <select id="sort">
+            <option value="featured">Destacados</option>
+            <option value="price_asc">Precio: menor → mayor</option>
+            <option value="price_desc">Precio: mayor → menor</option>
+            <option value="name_asc">Nombre (A→Z)</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div id="products" class="grid" aria-live="polite"></div>
+    </section>
+
+    <section class="info">
+      <div class="info-card">
+        <h2>Envíos</h2>
+        <p>
+          Uruguay: Montevideo / Interior / Retiro en tienda.<br/>
+          Exterior: Argentina, Brasil, USA/Europa (se cotiza automáticamente en el checkout por WhatsApp).
+        </p>
+      </div>
+      <div class="info-card">
+        <h2>Redes</h2>
+        <div class="social">
+          <a id="social-ig" href="#" target="_blank" rel="noopener">Instagram</a>
+          <a id="social-fb" href="#" target="_blank" rel="noopener">Facebook</a>
+          <a id="social-tt" href="#" target="_blank" rel="noopener">TikTok</a>
+          <a id="social-yt" href="#" target="_blank" rel="noopener">YouTube</a>
+        </div>
+        <p class="small">Editá los links en <code>server/catalog.json</code>.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Drawer Carrito -->
+  <div id="backdrop" class="backdrop" hidden></div>
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <div class="drawer-title">Tu carrito</div>
+        <div id="drawer-sub" class="small">0 productos</div>
+      </div>
+      <button id="close-cart" class="btn tiny">Cerrar</button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="shipping">
+        <label for="ship">Envío</label>
+        <select id="ship"></select>
+      </div>
+
+      <div id="cart-items" class="cart-items"></div>
+    </div>
+
+    <div class="drawer-foot">
+      <div class="totals">
+        <div class="small">Total aprox.</div>
+        <div id="cart-total" class="total">$ 0</div>
+      </div>
+
+      <div class="checkout">
+        <button id="btn-pay" class="btn primary full">Pagar con Mercado Pago</button>
+        <button id="btn-wsp-cart" class="btn ghost full">Comprar por WhatsApp</button>
+      </div>
+      <div class="small muted">
+        * Mercado Pago se procesa en UYU. Para exterior, usá WhatsApp (cotización + envío).
+      </div>
+    </div>
+  </aside>
+
+  <!-- Modal Producto -->
+  <div id="modal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button id="modal-close" class="modal-close" aria-label="Cerrar">✕</button>
+
+      <div class="modal-grid">
+        <div class="gallery">
+          <img id="modal-img" class="modal-img" alt="" />
+          <div id="modal-thumbs" class="thumbs"></div>
+        </div>
+
+        <div class="modal-info">
+          <h3 id="modal-title"></h3>
+          <div class="meta">
+            <span id="modal-cat" class="chip"></span>
+            <span id="modal-tag" class="chip"></span>
+            <span id="modal-stock" class="chip"></span>
+          </div>
+
+          <div id="modal-price" class="modal-price"></div>
+          <p id="modal-desc" class="modal-desc"></p>
+
+          <ul id="modal-specs" class="specs"></ul>
+
+          <div class="modal-actions">
+            <div class="qty">
+              <button id="m-minus">−</button>
+              <span id="m-qty">1</span>
+              <button id="m-plus">+</button>
+            </div>
+            <button id="m-add" class="btn primary">Agregar</button>
+            <button id="m-wsp" class="btn ghost">WhatsApp</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <a id="wsp-float" class="wsp-float" href="#" aria-label="WhatsApp">
+    💬
+  </a>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>
