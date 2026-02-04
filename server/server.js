@@ -229,6 +229,7 @@ app.post("/api/create_preference", async (req, res) => {
       };
       body.auto_return = "approved";
       body.notification_url = `${baseUrl}/api/webhook/mercadopago`;
+      body.payment_methods = { installments: 12 };
 
     }
 
