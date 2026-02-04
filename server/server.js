@@ -228,7 +228,8 @@ app.post("/api/create_preference", async (req, res) => {
         failure: `${baseUrl}/?pago=failure`
       };
       body.auto_return = "approved";
-      // body.notification_url = `${baseUrl}/api/webhook/mercadopago`; // activá cuando quieras
+      body.notification_url = `${baseUrl}/api/webhook/mercadopago`;
+
     }
 
     const response = await mpPreference.create({ body });
