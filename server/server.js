@@ -41,23 +41,27 @@ function getProductById(catalog, id) {
   return catalog.products.find((p) => String(p.id) === String(id));
 }
 
+/**
+ * BASE_URL:
+ * - En Render debe ser: https://runandsport-pro.onrender.com
+ * - En local: http://localhost:4000
+ */
 function getBaseUrl() {
   const PORT = process.env.PORT || 4000;
-  const env = (process.env.BASE_URL || "").trim();
+  const env = (process.env.BASE_URL || "").trim().replace(/\/+$/, ""); // sin "/" final
   return env ? env : `http://localhost:${PORT}`;
 }
 
 // ---------------- Mercado Pago ----------------
 let mpPreference = null;
 if (!process.env.MP_ACCESS_TOKEN) {
-  console.warn("⚠️ Falta MP_ACCESS_TOKEN en .env. Mercado Pago no va a funcionar.");
+  console.warn("⚠️ Falta MP_ACCESS_TOKEN. Mercado Pago no va a funcionar.");
 } else {
   const mpClient = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
   mpPreference = new Preference(mpClient);
 }
 
 // ---------------- FX rates (cache) ----------------
-// Usamos un endpoint público sin API Key. Si falla, usamos fallback.
 const FX_TTL_MS = 12 * 60 * 60 * 1000; // 12h
 const fxCache = new Map(); // base -> { ts, rates }
 
@@ -72,16 +76,13 @@ async function getRates(base) {
   const cached = fxCache.get(b);
   if (cached && Date.now() - cached.ts < FX_TTL_MS) return cached.rates;
 
-  // Servicio principal
   try {
-    // open.er-api.com: JSON simple, sin key
     const data = await fetchJson(`https://open.er-api.com/v6/latest/${encodeURIComponent(b)}`);
     const rates = data?.rates;
     if (!rates || typeof rates !== "object") throw new Error("rates inválidas");
     fxCache.set(b, { ts: Date.now(), rates });
     return rates;
   } catch (e) {
-    // Fallback muy básico (solo para no romper)
     const fallbackUSD_UYU = safeNumber(process.env.USD_UYU_RATE, 40);
     const fallback = {
       USD: { UYU: fallbackUSD_UYU },
@@ -122,10 +123,10 @@ app.use(express.static(PUBLIC_DIR));
 
 // Health check
 app.get("/api/health", (_req, res) => {
-  res.json({ 
-    ok: true, 
-    app: "Run&Sport PRO", 
-    now: new Date().toISOString() 
+  res.json({
+    ok: true,
+    app: "Run&Sport PRO",
+    now: new Date().toISOString()
   });
 });
 
@@ -139,7 +140,6 @@ app.get("/api/geo", (_req, res) => {
     res.json({ country_code: "UY" });
   }
 });
-
 
 // Config útil para el frontend
 app.get("/api/config", (_req, res) => {
@@ -157,7 +157,6 @@ app.get("/api/config", (_req, res) => {
 app.get("/api/catalog", (_req, res) => {
   try {
     const catalog = readCatalog();
-    // No mandamos nada sensible; solo el catálogo.
     res.json({ shop: catalog.shop, products: catalog.products });
   } catch (e) {
     res.status(500).json({ error: "No se pudo leer catálogo", detail: e.message });
@@ -178,17 +177,14 @@ app.get("/api/fx", async (req, res) => {
 // Crear preferencia Mercado Pago (Checkout Pro)
 app.post("/api/create_preference", async (req, res) => {
   try {
-    if (!mpPreference) return res.status(500).json({ error: "Falta MP_ACCESS_TOKEN en .env" });
+    if (!mpPreference) return res.status(500).json({ error: "Falta MP_ACCESS_TOKEN" });
 
-    const { cart, currency } = req.body || {};
+    const { cart } = req.body || {};
     if (!Array.isArray(cart) || cart.length === 0) return res.status(400).json({ error: "Carrito vacío" });
 
-    // Mercado Pago UY normalmente cobra en UYU. Blindamos a UYU.
     const MP_CURRENCY = "UYU";
-
     const catalog = readCatalog();
 
-    // armamos items con precios SOLO del server
     const items = [];
     for (const line of cart) {
       const id = String(line?.id || "").trim();
@@ -201,7 +197,6 @@ app.post("/api/create_preference", async (req, res) => {
       const cur = String(p.currency || catalog.shop.defaultCurrency || "UYU").toUpperCase();
       if (!unit || unit <= 0) throw new Error(`Precio inválido en: ${title}`);
 
-      // Convertimos a UYU si viene en USD
       let priceUyu = unit;
       if (cur !== MP_CURRENCY) {
         priceUyu = await convert(unit, cur, MP_CURRENCY);
@@ -215,20 +210,26 @@ app.post("/api/create_preference", async (req, res) => {
       });
     }
 
-    const baseUrl = getBaseUrl();
+    const baseUrl = getBaseUrl(); // <- usa BASE_URL si existe
+    const isPublicHttps = /^https:\/\//i.test(baseUrl);
 
+    // ✅ Si NO hay URL pública https, NO usamos auto_return (evita el error 400)
     const body = {
       items,
-      back_urls: {
+      statement_descriptor: "RUN&SPORT",
+      external_reference: `RUNSPORT-${Date.now()}`
+    };
+
+    // ✅ Si hay https pública, ponemos back_urls + auto_return
+    if (isPublicHttps) {
+      body.back_urls = {
         success: `${baseUrl}/?pago=success`,
         pending: `${baseUrl}/?pago=pending`,
         failure: `${baseUrl}/?pago=failure`
-      },
-      auto_return: "approved",
-      statement_descriptor: "RUN&SPORT",
-      external_reference: `RUNSPORT-${Date.now()}`
-      // notification_url: `${baseUrl}/api/webhook/mercadopago` // activá en prod
-    };
+      };
+      body.auto_return = "approved";
+      // body.notification_url = `${baseUrl}/api/webhook/mercadopago`; // activá cuando quieras
+    }
 
     const response = await mpPreference.create({ body });
 
@@ -259,4 +260,6 @@ app.listen(PORT, () => {
   console.log("✅ Run&Sport PRO listo");
   console.log(`✅ http://localhost:${PORT}`);
   console.log(`✅ Health: http://localhost:${PORT}/api/health`);
+  console.log(`✅ BASE_URL: ${getBaseUrl()}`);
 });
+
