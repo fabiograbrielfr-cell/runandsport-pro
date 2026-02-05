@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
+
+  <!-- TOPBAR -->
   <header class="topbar">
     <div class="wrap topbar-inner">
       <a class="brand" href="/">
@@ -17,6 +19,12 @@
           <span class="tagline">Tienda online • UY + compras del exterior</span>
         </span>
       </a>
+
+      <!-- BUSCADOR (tipo Amazon) -->
+      <div class="searchbox" role="search">
+        <input id="q" type="search" placeholder="Buscar productos, marcas, modelos..." />
+        <button id="btnClear" class="btn" type="button">Limpiar</button>
+      </div>
 
       <div class="actions">
         <div class="currency">
@@ -43,6 +51,7 @@
   </header>
 
   <main class="wrap">
+    <!-- HERO -->
     <section class="hero">
       <div class="hero-card">
         <h1>Todo para entrenar, competir y moverte.</h1>
@@ -70,39 +79,73 @@
       </div>
     </section>
 
-    <section class="controls">
-      <div class="pills" role="tablist" aria-label="Categorías">
-        <button class="pill active" data-cat="all">Todo</button>
-        <button class="pill" data-cat="deportes">Deportes</button>
-        <button class="pill" data-cat="tenis">Tenis</button>
-        <button class="pill" data-cat="padel">Pádel</button>
-        <button class="pill" data-cat="beachtennis">Beach Tennis</button>
-        <button class="pill" data-cat="electronica">Electrónica</button>
-        <button class="pill" data-cat="movilidad">Movilidad eléctrica</button>
-      </div>
+    <!-- LAYOUT AMAZON (sin inline) -->
+    <section class="layout">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <h3>Filtrar</h3>
 
-      <div class="search-row">
-        <div class="search">
-          <input id="search" type="search" placeholder="Buscar productos, marcas, tags..." />
-          <button id="btn-clear" class="btn tiny">Limpiar</button>
+        <div class="block">
+          <div class="block-title">Categorías</div>
+          <div id="catList" class="cat-list"></div>
         </div>
 
-        <div class="sort">
-          <label for="sort">Orden</label>
-          <select id="sort">
-            <option value="featured">Destacados</option>
+        <div class="block">
+          <div class="block-title">Precio</div>
+
+          <div class="row">
+            <label class="lbl" for="minPrice">Desde</label>
+            <input id="minPrice" type="number" inputmode="numeric" placeholder="0" />
+          </div>
+
+          <div class="row">
+            <label class="lbl" for="maxPrice">Hasta</label>
+            <input id="maxPrice" type="number" inputmode="numeric" placeholder="999999" />
+          </div>
+
+          <button id="btnApplyPrice" class="btn primary" type="button">Aplicar</button>
+        </div>
+
+        <div class="block">
+          <div class="block-title">Disponibilidad</div>
+
+          <label class="check">
+            <input id="onlyStock" type="checkbox" />
+            <span>Solo disponibles</span>
+          </label>
+
+          <label class="check">
+            <input id="onlyFeatured" type="checkbox" />
+            <span>Solo destacados</span>
+          </label>
+        </div>
+
+        <div class="block">
+          <div class="block-title">Ordenar</div>
+          <select id="sortBy">
+            <option value="featured">Destacados primero</option>
             <option value="price_asc">Precio: menor → mayor</option>
             <option value="price_desc">Precio: mayor → menor</option>
-            <option value="name_asc">Nombre (A→Z)</option>
+            <option value="title_asc">Nombre (A→Z)</option>
           </select>
         </div>
-      </div>
+
+        <div class="block">
+          <button id="btnReset" class="btn" type="button">Reset filtros</button>
+        </div>
+      </aside>
+
+      <!-- CONTENT -->
+      <section class="content">
+        <div class="content-top">
+          <div id="resultsInfo" class="results-info">Cargando...</div>
+        </div>
+
+        <div id="grid" class="grid" aria-live="polite"></div>
+      </section>
     </section>
 
-    <section>
-      <div id="products" class="grid" aria-live="polite"></div>
-    </section>
-
+    <!-- INFO -->
     <section class="info">
       <div class="info-card">
         <h2>Envíos</h2>
@@ -111,6 +154,7 @@
           Exterior: Argentina, Brasil, USA/Europa (se cotiza automáticamente en el checkout por WhatsApp).
         </p>
       </div>
+
       <div class="info-card">
         <h2>Redes</h2>
         <div class="social">
@@ -154,6 +198,7 @@
         <button id="btn-pay" class="btn primary full">Pagar con Mercado Pago</button>
         <button id="btn-wsp-cart" class="btn ghost full">Comprar por WhatsApp</button>
       </div>
+
       <div class="small muted">
         * Mercado Pago se procesa en UYU. Para exterior, usá WhatsApp (cotización + envío).
       </div>
@@ -173,6 +218,7 @@
 
         <div class="modal-info">
           <h3 id="modal-title"></h3>
+
           <div class="meta">
             <span id="modal-cat" class="chip"></span>
             <span id="modal-tag" class="chip"></span>
@@ -198,9 +244,7 @@
     </div>
   </div>
 
-  <a id="wsp-float" class="wsp-float" href="#" aria-label="WhatsApp">
-    💬
-  </a>
+  <a id="wsp-float" class="wsp-float" href="#" aria-label="WhatsApp">💬</a>
 
   <script src="/app.js" defer></script>
 </body>

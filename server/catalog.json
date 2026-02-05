@@ -91,28 +91,43 @@
       "stock": "in_stock"
     },
     {
-      "id": "ten1",
+      "id": "ten-siboasi-tb1",
       "category": "tenis",
-      "title": "Raqueta Tenis Carbon Pro",
-      "desc": "Balanceada para control y potencia. Grip cómodo, ideal intermedio/avanzado.",
-      "tag": "Tenis",
-      "price": 5890,
+      "title": "SIBOASI SS-TB1 — Máquina Lanzapelotas Tenis/Pádel (120 bolas)",
+      "desc": "Máquina profesional portátil SIBOASI para entrenamiento de tenis y pádel. Control por control remoto y app. Ideal para coaching, práctica personal y clubes.",
+      "tag": "Tenis / Pádel",
+      "price": 32000,
       "currency": "UYU",
       "images": [
-        "images/tenis/ten1-1.svg",
-        "images/tenis/ten1-2.svg",
-        "images/tenis/ten1-3.svg"
+       "images/tenis/siboasi-tb1/siboasi-tb1-1.jpg",
+       "images/tenis/siboasi-tb1/siboasi-tb1-2.jpg",
+       "images/tenis/siboasi-tb1/siboasi-tb1-3.jpg",
+       "images/tenis/siboasi-tb1/siboasi-tb1-4.jpg",
+       "images/tenis/siboasi-tb1/siboasi-tb1-5.jpg",
+       "images/tenis/siboasi-tb1/siboasi-tb1-6.jpg",
+       "images/tenis/siboasi-tb1/siboasi-tb1-7.jpg"
       ],
       "specs": [
-        "Peso: 300g",
-        "Tamaño cabeza: 100 in²",
-        "Patrón: 16x19",
-        "Incluye: funda"
-      ],
-      "featured": true,
-      "stock": "in_stock"
-    },
-    {
+       "Modelo: SS-TB1",
+       "Capacidad: 120 bolas",
+       "Frecuencia: 1.8–9 s/bola",
+       "Potencia: 170W",
+       "Voltaje: AC 100–240V (50/60Hz)",
+       "Control: remoto + app móvil",
+       "Material: ABS",
+       "Uso: interior / exterior",
+       "Peso neto aprox.: 11.4 kg",
+       "Incluye: control remoto + adaptador + manual + garantía"
+     ],
+     "featured": true,
+     "stock": "in_stock",
+     "badge": "Profesional",
+     "variants": [
+    { "label": "Color", "options": ["Blanco", "Negro", "Rojo"] },
+    { "label": "Enchufe", "options": ["Brasileño", "Americano", "Europeo", "Británico", "Australiano"] }
+     ]
+   }
+  ,{
       "id": "ten2",
       "category": "tenis",
       "title": "Pelotas de Tenis Premium (Pack x3)",

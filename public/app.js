@@ -41,16 +41,25 @@ let SHOP = null;
 let PRODUCTS = [];
 
 const state = {
+  // Amazon sidebar filters
   cat: "all",
   q: "",
   sort: "featured",
+  minPrice: null,
+  maxPrice: null,
+  onlyStock: false,
+  onlyFeatured: false,
+
+  // Cart + modal
   cart: loadCart(),
   modalProduct: null,
   modalQty: 1,
 
+  // Currency
   displayCurrency: loadCurrency(),
   detectedCountry: null,
 
+  // FX + Shipping
   fx: new Map(), // base -> rates
   shippingOptions: [], // [{id,label,price,currency}]
   selectedShippingId: null
@@ -136,7 +145,6 @@ async function detectCountry(){
   return state.detectedCountry;
 }
 
-
 function getDisplayCurrency(){
   if(state.displayCurrency !== "AUTO") return state.displayCurrency;
   return currencyForCountry(state.detectedCountry || (SHOP?.country || "UY"));
@@ -173,7 +181,9 @@ async function convert(amount, from, to){
 }
 
 // ---------------- UI: productos ----------------
-const productsEl = $("#products");
+// ⬇️ IMPORTANTE: ahora el grid es #grid (Amazon layout)
+const productsEl = $("#grid") || $("#products"); // fallback por si volvés atrás
+const resultsInfoEl = $("#resultsInfo");         // Amazon: contador
 const payNotice = $("#pay-notice");
 
 // Drawer
@@ -203,29 +213,18 @@ const mQty = $("#m-qty");
 const mAdd = $("#m-add");
 const mWsp = $("#m-wsp");
 
-// ---------------- Visible list ----------------
-function getVisible(){
-  let list = [...PRODUCTS];
+// ---------------- Helpers producto ----------------
+function norm(s){
+  return (s||"").toString().toLowerCase()
+    .normalize("NFD").replace(/\p{Diacritic}/gu,"");
+}
 
-  if(state.cat !== "all") list = list.filter(p => p.category === state.cat);
-
-  if(state.q.trim()){
-    const q = state.q.trim().toLowerCase();
-    list = list.filter(p =>
-      `${p.title} ${p.desc} ${p.tag} ${p.category}`.toLowerCase().includes(q)
-    );
-  }
-
-  switch(state.sort){
-    case "price_asc": list.sort((a,b)=>(a.price||0)-(b.price||0)); break;
-    case "price_desc": list.sort((a,b)=>(b.price||0)-(a.price||0)); break;
-    case "name_asc": list.sort((a,b)=>String(a.title||"").localeCompare(String(b.title||""),"es")); break;
-    default:
-      list.sort((a,b)=>(b.featured===true)-(a.featured===true));
-      break;
-  }
-
-  return list;
+function isInStock(p){
+  if(p.stock === "in_stock") return true;
+  if(p.stock === "out_of_stock") return false;
+  if(typeof p.stock === "number") return p.stock > 0;
+  if(typeof p.stock === "boolean") return p.stock;
+  return true; // default
 }
 
 async function priceLabel(p){
@@ -239,8 +238,69 @@ function primaryImg(p){
   return imgs[0] || null;
 }
 
+// ---------------- Visible list (Amazon sidebar) ----------------
+function getVisible(){
+  let list = [...PRODUCTS];
+
+  // category
+  if(state.cat !== "all") list = list.filter(p => p.category === state.cat);
+
+  // stock / featured
+  if(state.onlyStock) list = list.filter(isInStock);
+  if(state.onlyFeatured) list = list.filter(p => !!p.featured);
+
+  // price (filtra por precio base del producto; la moneda display puede variar, pero es consistente)
+  if(state.minPrice !== null && Number.isFinite(state.minPrice)){
+    list = list.filter(p => Number(p.price||0) >= state.minPrice);
+  }
+  if(state.maxPrice !== null && Number.isFinite(state.maxPrice)){
+    list = list.filter(p => Number(p.price||0) <= state.maxPrice);
+  }
+
+  // search: title + desc + tag + category + specs
+  const q = norm(state.q).trim();
+  if(q){
+    list = list.filter(p => {
+      const hay = [
+        p.title, p.desc, p.tag, p.category,
+        ...(Array.isArray(p.specs) ? p.specs : [])
+      ].map(norm).join(" | ");
+      return hay.includes(q);
+    });
+  }
+
+  // sort
+  switch(state.sort){
+    case "price_asc": list.sort((a,b)=>(a.price||0)-(b.price||0)); break;
+    case "price_desc": list.sort((a,b)=>(b.price||0)-(a.price||0)); break;
+    case "title_asc": list.sort((a,b)=>String(a.title||"").localeCompare(String(b.title||""),"es")); break;
+    default:
+      // destacados primero; si empatan, menor precio primero
+      list.sort((a,b)=>{
+        const fa = a.featured===true ? 1 : 0;
+        const fb = b.featured===true ? 1 : 0;
+        if(fa !== fb) return fb - fa;
+        return (a.price||0) - (b.price||0);
+      });
+      break;
+  }
+
+  return list;
+}
+
+function renderResultsInfo(count){
+  if(!resultsInfoEl) return;
+  const catLabel = state.cat === "all" ? "Todas" : cap(state.cat);
+  const q = (state.q||"").trim();
+  resultsInfoEl.textContent = `${count} resultado(s) • ${catLabel}${q ? ` • búsqueda: "${q}"` : ""}`;
+}
+
 async function renderProducts(){
+  if(!productsEl) return;
+
   const list = getVisible();
+  renderResultsInfo(list.length);
+
   if(!list.length){
     productsEl.innerHTML = `<div class="small">No hay productos para tu búsqueda/filtro.</div>`;
     return;
@@ -253,21 +313,30 @@ async function renderProducts(){
     const label = await priceLabel(p);
     const src = primaryImg(p) ? imgPath(primaryImg(p)) : ph;
 
+    const badge = p.featured ? "Destacado" : (p.badge || "");
+    const badgeClass = p.featured ? "hot" : (badge?.toLowerCase().includes("oferta") ? "sale" : "");
+
     return `
       <article class="card">
-        <button class="ghost-btn" style="border:none;background:transparent;padding:0;text-align:left;cursor:pointer"
-          onclick="openModal('${p.id}')">
-          <img src="${src}" alt="${p.title}" onerror="this.onerror=null;this.src='${ph}'">
-        </button>
+        <div class="img-wrap">
+          <button class="ghost-btn"
+            style="border:none;background:transparent;padding:0;text-align:left;cursor:pointer;width:100%"
+            onclick="openModal('${p.id}')">
+            <img src="${src}" alt="${p.title}" onerror="this.onerror=null;this.src='${ph}'">
+          </button>
+
+          ${badge ? `<div class="badge-top ${badgeClass}">${badge}</div>` : ""}
+        </div>
 
         <div class="body">
           <h3 style="cursor:pointer" onclick="openModal('${p.id}')">${p.title}</h3>
+
           <div class="meta">
             <span class="chip">${cap(p.category)}</span>
             <span class="chip">${p.tag || "Producto"}</span>
-            ${p.featured ? `<span class="chip">Destacado</span>` : ""}
             <span class="price">${label}</span>
           </div>
+
           <p class="desc">${p.desc}</p>
         </div>
 
@@ -277,6 +346,10 @@ async function renderProducts(){
             <span>${qty}</span>
             <button onclick="chg('${p.id}',1)">+</button>
           </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn light" onclick="openModal('${p.id}')">Ver</button>
           <button class="btn primary" onclick="add('${p.id}')">Agregar</button>
         </div>
       </article>
@@ -607,8 +680,7 @@ modal.addEventListener("click", (e)=>{ if(e.target === modal) closeModal(); });
 // cerrar con ESC
 document.addEventListener("keydown", (e)=>{ if(e.key === "Escape" && !modal.hidden) closeModal(); });
 
-modal.addEventListener("click",(e)=>{ if(e.target === modal) closeModal(); });
-
+// qty
 mMinus.addEventListener("click", ()=>{
   state.modalQty = Math.max(1, state.modalQty - 1);
   mQty.textContent = String(state.modalQty);
@@ -631,24 +703,139 @@ mAdd.addEventListener("click", async ()=>{
 mWsp.addEventListener("click", async ()=>{
   const p = state.modalProduct;
   if(!p) return;
-  const cur = getDisplayCurrency();
   const label = await priceLabel(p);
   openWsp(`Hola Run&Sport! Quiero consultar/comprar:\n- ${p.title} x${state.modalQty}\nPrecio aprox.: ${label}\n¿Está disponible?`);
 });
 
-// ---------------- Filters ----------------
-$("#search").addEventListener("input",(e)=>{ state.q = e.target.value; sync(); });
-$("#btn-clear").addEventListener("click", ()=>{ $("#search").value = ""; state.q = ""; sync(); });
-$("#sort").addEventListener("change",(e)=>{ state.sort = e.target.value; sync(); });
+// ---------------- Amazon Sidebar UI (eventos) ----------------
+function buildCategorySidebar(){
+  const catList = $("#catList");
+  if(!catList) return;
 
-document.querySelectorAll(".pill[data-cat]").forEach(btn=>{
-  btn.addEventListener("click", ()=>{
-    document.querySelectorAll(".pill[data-cat]").forEach(b=>b.classList.remove("active"));
+  const counts = {};
+  for(const p of PRODUCTS){
+    const c = p.category || "otros";
+    counts[c] = (counts[c]||0) + 1;
+  }
+  const cats = Object.keys(counts).sort((a,b)=> (counts[b]-counts[a]) || a.localeCompare(b));
+
+  const total = PRODUCTS.length;
+  catList.innerHTML = [
+    `<button class="cat-btn ${state.cat==="all" ? "active" : ""}" data-cat="all">
+      Todas <span class="cat-meta">(${total})</span>
+    </button>`,
+    ...cats.map(c => `
+      <button class="cat-btn ${state.cat===c ? "active" : ""}" data-cat="${c}">
+        ${cap(c)} <span class="cat-meta">(${counts[c]})</span>
+      </button>
+    `)
+  ].join("");
+
+  catList.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".cat-btn");
+    if(!btn) return;
+
+    state.cat = btn.dataset.cat || "all";
+
+    [...catList.querySelectorAll(".cat-btn")].forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
-    state.cat = btn.dataset.cat;
+
     sync();
   });
-});
+}
+
+function bindAmazonControls(){
+  // buscador (topbar)
+  const q = $("#q");
+  if(q){
+    q.addEventListener("input", ()=>{
+      state.q = q.value || "";
+      clearTimeout(window.__rs_qt);
+      window.__rs_qt = setTimeout(sync, 180);
+    });
+  }
+
+  const btnClear = $("#btnClear");
+  if(btnClear){
+    btnClear.addEventListener("click", ()=>{
+      if(q) q.value = "";
+      state.q = "";
+      sync();
+    });
+  }
+
+  // precio
+  const minI = $("#minPrice");
+  const maxI = $("#maxPrice");
+  const btnApply = $("#btnApplyPrice");
+  if(btnApply){
+    btnApply.addEventListener("click", ()=>{
+      const minV = Number(minI?.value ?? "");
+      const maxV = Number(maxI?.value ?? "");
+      state.minPrice = Number.isFinite(minV) ? minV : null;
+      state.maxPrice = Number.isFinite(maxV) ? maxV : null;
+      sync();
+    });
+  }
+
+  // checks
+  const onlyStock = $("#onlyStock");
+  if(onlyStock){
+    onlyStock.addEventListener("change", ()=>{
+      state.onlyStock = !!onlyStock.checked;
+      sync();
+    });
+  }
+
+  const onlyFeatured = $("#onlyFeatured");
+  if(onlyFeatured){
+    onlyFeatured.addEventListener("change", ()=>{
+      state.onlyFeatured = !!onlyFeatured.checked;
+      sync();
+    });
+  }
+
+  // sort
+  const sortBy = $("#sortBy");
+  if(sortBy){
+    sortBy.addEventListener("change", ()=>{
+      state.sort = sortBy.value || "featured";
+      sync();
+    });
+  }
+
+  // reset
+  const btnReset = $("#btnReset");
+  if(btnReset){
+    btnReset.addEventListener("click", ()=>{
+      state.cat = "all";
+      state.q = "";
+      state.sort = "featured";
+      state.minPrice = null;
+      state.maxPrice = null;
+      state.onlyStock = false;
+      state.onlyFeatured = false;
+
+      // reset UI
+      if(q) q.value = "";
+      if(minI) minI.value = "";
+      if(maxI) maxI.value = "";
+      if(onlyStock) onlyStock.checked = false;
+      if(onlyFeatured) onlyFeatured.checked = false;
+      if(sortBy) sortBy.value = "featured";
+
+      // activar "Todas"
+      const catList = $("#catList");
+      if(catList){
+        [...catList.querySelectorAll(".cat-btn")].forEach(b=>b.classList.remove("active"));
+        const first = catList.querySelector(`[data-cat="all"]`);
+        if(first) first.classList.add("active");
+      }
+
+      sync();
+    });
+  }
+}
 
 // Currency selector
 $("#currency").addEventListener("change", async (e)=>{
@@ -681,10 +868,8 @@ async function sync(){
   try{
     // FIX CRÍTICO: asegurarse de que el modal arranca cerrado
     const m = document.querySelector("#modal");
-    if (m) {
-      m.hidden = true;
-      m.style.display = "none";
-    }
+    if (m) m.hidden = true;
+
     document.body.style.overflow = "";
 
     await loadConfig();
@@ -697,10 +882,16 @@ async function sync(){
     const cur = document.querySelector("#currency");
     if (cur) cur.value = state.displayCurrency;
 
+    // construir sidebar + listeners
+    buildCategorySidebar();
+    bindAmazonControls();
+
+    // shipping + render
     await buildShippingOptions();
     await sync();
   }catch(e){
-    productsEl.innerHTML = `<div class="small">❌ Error cargando tienda: ${e.message}</div>`;
+    if(productsEl) productsEl.innerHTML = `<div class="small">❌ Error cargando tienda: ${e.message}</div>`;
     console.error(e);
   }
 })();
+
