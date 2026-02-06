@@ -16,6 +16,40 @@ const { MercadoPagoConfig, Preference } = require("mercadopago");
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
+// ==============================
+// Admin simple: VER y GUARDAR catalog.json
+// (protegido por token en header)
+// ==============================
+
+app.get("/api/admin/catalog", (req, res) => {
+  try {
+    const raw = fs.readFileSync(CATALOG_PATH, "utf8");
+    res.type("application/json").send(raw);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post("/api/admin/catalog", (req, res) => {
+  try {
+    const token = String(req.headers["x-admin-token"] || "");
+    if (!process.env.ADMIN_TOKEN || token !== process.env.ADMIN_TOKEN) {
+      return res.status(401).json({ error: "No autorizado" });
+    }
+
+    const body = req.body;
+
+    // validación mínima para no romper tu tienda
+    if (!body || typeof body !== "object" || !Array.isArray(body.products)) {
+      return res.status(400).json({ error: "Formato inválido: falta products[]" });
+    }
+
+    fs.writeFileSync(CATALOG_PATH, JSON.stringify(body, null, 2), "utf8");
+    return res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // ---------------- Paths ----------------
 const ROOT_DIR = path.join(__dirname, "..");
