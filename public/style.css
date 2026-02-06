@@ -525,3 +525,8 @@ select:focus, input:focus{ border-color: rgba(56,189,248,.55); box-shadow: 0 0 0
 #btnReset{
   width: 100%;
 }
+/* Aviso universal (neutral) */
+.note-neutral{
+  border:1px solid rgba(56,189,248,.22);
+  background: rgba(56,189,248,.08);
+}

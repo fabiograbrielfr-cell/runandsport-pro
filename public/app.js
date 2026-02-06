@@ -550,6 +550,11 @@ async function buildWspMessage(){
   lines.push("Nombre:");
   lines.push("Ciudad / Dirección:");
   lines.push("Consulta/Nota:");
+  lines.push("—");
+  lines.push("Estado del pago:");
+  lines.push("• Si pagás con Abitab/Redpagos: queda PENDIENTE hasta que se abone en el local.");
+  lines.push("• Con tarjeta: puede aprobarse al instante o quedar pendiente por validación.");
+  lines.push("Apenas figure APROBADO, coordinamos envío/entrega.");
 
   return lines.join("\n");
 }
