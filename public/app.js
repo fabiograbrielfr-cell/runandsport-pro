@@ -934,7 +934,7 @@ function buildPayPalMeLink(totalUYU, note){
   const FX = 40;
 
   const amount = Math.max(1, Math.round((Number(totalUYU) / FX) * 100) / 100); // 2 decimales
-  const base = "https://www.paypal.me/TU_PAYPAL_ME";
+  const base = "https://www.paypal.me/runandsportuy";
   const url = `${base}/${amount}${currency}`;
   // Nota: PayPal.me no siempre admite "note" como parámetro; lo dejamos para mostrar al usuario si querés
   return url;
