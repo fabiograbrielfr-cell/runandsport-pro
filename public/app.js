@@ -423,6 +423,8 @@ async function renderCart(){
 
   const { sum, cur } = await computeCartTotal();
   cartTotal.textContent = formatMoney(sum, cur);
+  state.cartTotalUYU = sum; // ✅ guarda total para PayPal
+
 }
 
 // ---------------- Shipping ----------------
@@ -866,7 +868,11 @@ function setLink(sel, url){
 async function sync(){
   await renderProducts();
   await renderCart();
+
+  // ✅ PayPal solo exterior (se actualiza cada vez que cambia el carrito)
+  setupPayPalOnlyExterior(() => state.cartTotalUYU || 0);
 }
+
 
 // ---------------- Init ----------------
 (async function init(){
@@ -900,3 +906,64 @@ async function sync(){
   }
 })();
 
+// ==============================
+// PayPal SOLO EXTERIOR (sin tocar MP)
+// ==============================
+
+// 1) Detectar país del visitante (simple y bastante confiable)
+async function detectCountryPayPal(){
+
+  try{
+    // ipapi.co suele funcionar bien sin key para country
+    const r = await fetch("https://ipapi.co/json/");
+    const j = await r.json();
+    return (j && j.country_code) ? String(j.country_code).toUpperCase() : null;
+  }catch(e){
+    return null; // si falla, no mostramos PayPal
+  }
+}
+
+// 2) Armar link PayPal "Buy Now" (simple, sin SDK)
+// Reemplazás TU_PAYPAL_ME por tu usuario PayPal.me (ej: runandsport)
+function buildPayPalMeLink(totalUYU, note){
+  // Si querés cobrar en USD, cambiá "UYU" por "USD".
+  const currency = "USD";
+
+  // Convertimos UYU -> USD usando un tipo fijo para NO depender de APIs.
+  // Cambiá el 40 por el tipo que prefieras (ej: 40 UYU ≈ 1 USD).
+  const FX = 40;
+
+  const amount = Math.max(1, Math.round((Number(totalUYU) / FX) * 100) / 100); // 2 decimales
+  const base = "https://www.paypal.me/TU_PAYPAL_ME";
+  const url = `${base}/${amount}${currency}`;
+  // Nota: PayPal.me no siempre admite "note" como parámetro; lo dejamos para mostrar al usuario si querés
+  return url;
+}
+
+// 3) Mostrar PayPal solo si NO es Uruguay
+async function setupPayPalOnlyExterior(getCartTotalUYU){
+  const box = document.getElementById("paypalBox");
+  const btn = document.getElementById("paypalBtn");
+  if(!box || !btn) return;
+
+  const country = await detectCountryPayPal();
+
+
+  // Solo exterior: si es UY, oculto.
+  if(country === "UY"){
+    box.style.display = "none";
+    return;
+  }
+
+  // Si no pudimos detectar país, por seguridad NO lo mostramos.
+  if(!country){
+    box.style.display = "none";
+    return;
+  }
+
+  // Exterior: lo muestro y armo link
+  const totalUYU = getCartTotalUYU();
+  const note = "Run&Sport compra internacional";
+  btn.href = buildPayPalMeLink(totalUYU, note);
+  box.style.display = "block";
+}
